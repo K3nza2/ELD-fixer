@@ -1,0 +1,7 @@
+credentials.json
+.env
+target/
+*.class
+.vscode/
+.idea/
+*.jar
