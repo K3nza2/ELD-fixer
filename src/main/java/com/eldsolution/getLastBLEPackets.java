@@ -8,26 +8,39 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class getLastBLEPackets {
     public static void main(String[] args) throws IOException, InterruptedException{
         
+        String url = "https://www.skyonics.net/api/";
+
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create("https://www.skyonics.net/api/proxy/userlogin/login"))
-            .header("Content-Type", "application/x-www-form-urlencoded")
+            .uri(URI.create(url+"proxy/userlogin/login"))
+            .header("Content-Type","application/x-www-form-urlencoded")
             .POST(HttpRequest.BodyPublishers.ofString("UserName=lioneightops&Password=hR3%25Syd9"))
             .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        List<String> cookies = response.headers().allValues("Set-Cookie");
-        List<String> cookies_separated = new ArrayList<>();
-        for(String cookie : cookies){
-            cookies_separated.add(cookie.split(";")[0]);
-        }
-        System.out.println(cookies_separated);
         
-        //UNFINISHED, NEEDS COMPLETE OVERHAUL THIS IS GARBAGE
+        List<String> cookie_extract = response.headers().allValues("Set-Cookie");
+        List<String> cookies = new ArrayList<>();
+        for(String cookie : cookie_extract){
+            cookies.add(cookie.split(";")[0]);
+        }
+
+        String cookie = String.join("; ",cookies);
+        System.out.println(cookie);
+        HttpRequest request1 = HttpRequest.newBuilder()
+            .uri(URI.create(url+"proxy/devicehealthoperations/getcustomers"))
+            .header("Content-Type", "application/json")
+            .header("Cookie", cookie)
+            .GET()
+            .build();
+        HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
+        System.out.println(response1);
+
+        //UNFINISHED
 
         
-        //System.out.println(response.headers().allValues("Set-Cookie"));
     }
 }
