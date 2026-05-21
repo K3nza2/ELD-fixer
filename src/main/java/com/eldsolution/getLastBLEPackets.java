@@ -29,7 +29,7 @@ public class getLastBLEPackets {
         }
 
         String cookie = String.join("; ",cookies);
-        System.out.println(cookie);
+        
         HttpRequest request1 = HttpRequest.newBuilder()
             .uri(URI.create(url+"proxy/devicehealthoperations/getcustomers"))
             .header("Content-Type", "application/json")
@@ -38,9 +38,22 @@ public class getLastBLEPackets {
             .build();
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
         System.out.println(response1);
+        String ELD = "87X052860063";
+        String Begin = "2026-05-19T05:00:00.000Z";
+        String end = "2026-05-22T04:59:59.999Z";
+        String TZO = "-300";
+        String Graph = "OBDOdometer";
+        String Origin = "siteOperationsManagerDeviceanalysisPackets";
 
-        //UNFINISHED
-
+        HttpRequest get_anaview = HttpRequest.newBuilder()
+            .uri(URI.create(url+"proxy/devicehealthoperations/getanalysisview"))
+            .header("Content-type", "application/x-www-form-urlencoded")
+            .header("Cookie", cookie)
+            .POST(HttpRequest.BodyPublishers.ofString("SerialNumber="+ELD+"&Begin="+Begin+"&End="+end+"&TZOffset="+TZO+"&GraphColumn="+Graph+"&Origin="+Origin))
+            .build();
+            //UNFINISHED
+        HttpResponse<String> anaresponse = client.send(get_anaview,HttpResponse.BodyHandlers.ofString());
+        System.out.println(anaresponse.body());
         
     }
 }
