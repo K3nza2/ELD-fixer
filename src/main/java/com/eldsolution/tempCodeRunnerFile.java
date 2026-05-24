@@ -1,1 +1,0 @@
-https://www.skyonics.net/api

@@ -8,6 +8,9 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 public class getLastBLEPackets {
     public static void main(String[] args) throws IOException, InterruptedException{
@@ -37,10 +40,10 @@ public class getLastBLEPackets {
             .GET()
             .build();
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
-        System.out.println(response1);
-        String ELD = "87X052860063";
-        String Begin = "2026-05-19T05:00:00.000Z";
-        String end = "2026-05-22T04:59:59.999Z";
+        System.out.println(response1.body());
+        String ELD = "87A041770089";
+        String Begin = "2026-05-22T05:00:00.000Z";
+        String end = "2026-05-25T04:59:59.999Z";
         String TZO = "-300";
         String Graph = "OBDOdometer";
         String Origin = "siteOperationsManagerDeviceanalysisPackets";
@@ -53,7 +56,16 @@ public class getLastBLEPackets {
             .build();
             //UNFINISHED
         HttpResponse<String> anaresponse = client.send(get_anaview,HttpResponse.BodyHandlers.ofString());
-        System.out.println(anaresponse.body());
-        
+        String body = anaresponse.body();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode json = mapper.readTree(body);
+        JsonNode tabledata = json.get("Data").get("TableData").get(0);
+        System.out.println(tabledata); // i need Message Reason, Bluetooth Firmware Version and BLE Client
+        String BLEClient = tabledata.path("RowData").path("BLEClient").asText("null");//vreca vrednost koja nije null ako uredjaj ima BLE
+        System.out.println(BLEClient);
+        String MessageReason = tabledata.path("RowData").path("MessageReason").asText("null");
+        System.out.println(MessageReason);
+        String BLEFirmware = tabledata.path("RowData").path("BluetoothFirmwareVersion").asText("null");
+        System.out.println(BLEFirmware);
     }
 }
