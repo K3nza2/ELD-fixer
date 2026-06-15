@@ -16,18 +16,36 @@ import io.github.cdimascio.dotenv.Dotenv;
 //Task: Add logic for tracking if the device is working or not through skyonics and if not send reset ble command
 //if it still does not work add new device to sheet and hasmap and add a counter to it
 public class FirstScript {
+    /** Prefer the .env value (local dev) and fall back to the system env (Railway / Docker). */
+    private static String env(Dotenv dotenv, String key) {
+        String v = dotenv.get(key);
+        if (v == null) v = System.getenv(key);
+        return v;
+    }
+
     public static void main(String[] args) throws Exception {
-        Dotenv dotenv = Dotenv.load();
-        String app_level_token = dotenv.get("APP_LEVEL_TOKEN");
-        String bot_level_token = dotenv.get("BOT_LEVEL_TOKEN");
-        final String  SpreadsheetId = dotenv.get("SPREADSHEET_ID");
-        final String Range = dotenv.get("RANGE");
+        // ignoreIfMissing() allows the app to run on Railway / Docker where there is no .env file;
+        // locally the .env values are picked up, on Railway the system env vars are used.
+        Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
+
+        String app_level_token = env(dotenv, "APP_LEVEL_TOKEN");
+        String bot_level_token = env(dotenv, "BOT_LEVEL_TOKEN");
+        final String SpreadsheetId = env(dotenv, "SPREADSHEET_ID");
+        final String Range = env(dotenv, "RANGE");
+        final String credentialsJson = env(dotenv, "CREDENTIALS_JSON");
+
+        if (app_level_token == null || bot_level_token == null
+                || SpreadsheetId == null || Range == null || credentialsJson == null) {
+            throw new IllegalStateException(
+                "Missing required env vars. Need APP_LEVEL_TOKEN, BOT_LEVEL_TOKEN, "
+              + "SPREADSHEET_ID, RANGE, CREDENTIALS_JSON");
+        }
 
         App app = new App();
         System.out.println("Pocinjem inicijalizaciju sheets-a...");
 
         //Set up sheets and connect
-        GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper(dotenv.get("CREDENTIALS_JSON"));
+        GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper(credentialsJson);
         sheetsHelper.SetSpreadsheet(SpreadsheetId, Range);
         System.out.println("Sheets je inicijalizovan!");
         Sheets service = sheetsHelper.getSheetService();
