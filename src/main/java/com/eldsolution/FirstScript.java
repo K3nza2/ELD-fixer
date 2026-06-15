@@ -42,80 +42,85 @@ public class FirstScript {
         }
 
         App app = new App();
-        System.out.println("Pocinjem inicijalizaciju sheets-a...");
+        System.out.println("Awaiting message on Slack...");
 
-        //Set up sheets and connect
-        GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper(credentialsJson);
-        sheetsHelper.SetSpreadsheet(SpreadsheetId, Range);
-        System.out.println("Sheets je inicijalizovan!");
-        Sheets service = sheetsHelper.getSheetService();
-        ValueRange result = service.spreadsheets().values().get(SpreadsheetId, Range).execute();
-        Map<String, Integer> deviceMap = new HashMap<>();
-        List<List<Object>> values = result.getValues();
         
-        //creates a hashmap that reads all values in spreadsheet
-        for (int i = 0; i < values.size(); i++) {
-            List<Object> row = values.get(i);
-
-            if (!row.isEmpty()) {
-                String deviceId = row.get(0).toString();
-                deviceMap.put(deviceId, i + 1);
-            }
-        }
-
-        System.out.println("Stampam sta cita sa sheet-a:" +result);
-        System.out.println("Pocinjem sa cekanjem poruka na slack-u...");
         app.event(MessageEvent.class, (payload, ctx) -> {
-            MessageEvent event = payload.getEvent();
-            
-            String text = event.getText();
-            String channel = event.getChannel();
-            String user = event.getUser();
-            String ts = event.getTs();
-            
-            Slack slack = Slack.getInstance();
+            try{
+                GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper(credentialsJson);
+                sheetsHelper.SetSpreadsheet(SpreadsheetId, Range);
+                System.out.println("Sheets je inicijalizovan!");
+                Sheets service = sheetsHelper.getSheetService();
+                ValueRange result = service.spreadsheets().values().get(SpreadsheetId, Range).execute();
+                Map<String, Integer> deviceMap = new HashMap<>();
+                List<List<Object>> values = result.getValues();
+        
+                //creates a hashmap that reads all values in spreadsheet
+                for (int i = 0; i < values.size(); i++) {
+                    List<Object> row = values.get(i);
 
-            String id_uredjaja = text.substring(text.length()-12);
-            if(deviceMap.containsKey(id_uredjaja)) {
-                System.out.println("Nasao je uredjaj:" + id_uredjaja);
-                int rowindex = deviceMap.get(id_uredjaja);
-                String counterRange = "'Sheet1'!D" + rowindex;
-                ValueRange counterResult = service.spreadsheets().values().get(SpreadsheetId, counterRange).execute();
-                int counter = 0;
-                if(counterResult.getValues() != null && !counterResult.getValues().isEmpty()) {
+                    if (!row.isEmpty()) {
+                        String deviceId = row.get(0).toString();
+                        deviceMap.put(deviceId, i + 1);
+                    }
+                }
+
+                System.out.println("Loaded the sheet! Checking if device already exists...");
+                MessageEvent event = payload.getEvent();
+            
+                String text = event.getText();
+                String channel = event.getChannel();
+                String user = event.getUser();
+                String ts = event.getTs();
+            
+                Slack slack = Slack.getInstance();
+
+                String id_uredjaja = text.substring(text.length()-12);
+                if(deviceMap.containsKey(id_uredjaja)) {
+                    System.out.println("Found device:" + id_uredjaja);
+                    int rowindex = deviceMap.get(id_uredjaja);
+                    String counterRange = "'Sheet1'!D" + rowindex;
+                    ValueRange counterResult = service.spreadsheets().values().get(SpreadsheetId, counterRange).execute();
+                    int counter = 0;
+                    if(counterResult.getValues() != null && !counterResult.getValues().isEmpty()) {
                     counter = Integer.parseInt(counterResult.getValues().get(0).get(0).toString());
-                }
-                counter ++;
-                ValueRange body = new ValueRange().setValues(List.of(List.of(counter)));
-                System.out.println("Povecavam counter! proveri da li se povecao");
-                service.spreadsheets().values().update(SpreadsheetId, counterRange, body).setValueInputOption("RAW").execute();
-                try{
-                    slack.methods(bot_level_token).reactionsAdd(r -> r
-                    .channel(event.getChannel())
-                    .timestamp(event.getTs())
-                    .name("sheet1") 
-                );
-                } catch (Exception e) {
-                System.out.println("Reaction error: " + e.getMessage());
-                }
+                    }
+                    counter ++;
+                    ValueRange body = new ValueRange().setValues(List.of(List.of(counter)));
+                    System.out.println("Incrementing the counter!");
+                    service.spreadsheets().values().update(SpreadsheetId, counterRange, body).setValueInputOption("RAW").execute();
+                    try{
+                        slack.methods(bot_level_token).reactionsAdd(r -> r
+                        .channel(event.getChannel())
+                        .timestamp(event.getTs())
+                        .name("sheet1") 
+                    );
+                    } catch (Exception e) {
+                    System.out.println("Reaction error: " + e.getMessage());
+                    }
                 
-            }
-            else {
-                System.out.println("Nije nasao uredjaj");
-                try {
-                slack.methods(bot_level_token).reactionsAdd(r -> r
-                    .channel(event.getChannel())
-                    .timestamp(event.getTs())
-                    .name("eyes")
-                );
-            } catch (Exception e) {
-                System.out.println("Reaction error: " + e.getMessage());
                 }
+                else {
+                    System.out.println("Didn't find device");
+                    try {
+                    slack.methods(bot_level_token).reactionsAdd(r -> r
+                        .channel(event.getChannel())
+                        .timestamp(event.getTs())
+                        .name("eyes")
+                    );
+                } catch (Exception e) {
+                    System.out.println("Reaction error: " + e.getMessage());
+                    }
+                }
+                System.out.println("Message: " + text);
+                System.out.println("Channel: " + channel);
+                System.out.println("User: " + user);
+                System.out.println("timestamp:" + ts);
             }
-            System.out.println("Poruka: " + text);
-            System.out.println("Channel: " + channel);
-            System.out.println("User: " + user);
-            System.out.println("timestamp:" + ts);
+            catch (Exception e){
+                System.out.println("ERROR PROCESSING EVENT:" + e.getMessage());
+                e.printStackTrace();
+            }
 
             return ctx.ack();
         });
