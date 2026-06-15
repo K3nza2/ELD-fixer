@@ -5,6 +5,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +44,10 @@ public class getLastBLEPackets {
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
         System.out.println(response1.body());
         String ELD = "87A041770089";
-        String Begin = "2026-05-22T05:00:00.000Z";
-        String end = "2026-05-25T04:59:59.999Z";
+        Instant end_instance = Instant.now();
+        Instant begin_instance = end_instance.minus(Duration.ofDays(2));
+        String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z
+        String end = end_instance.toString();
         String TZO = "-300";
         String Graph = "OBDOdometer";
         String Origin = "siteOperationsManagerDeviceanalysisPackets";
@@ -59,9 +63,12 @@ public class getLastBLEPackets {
         String body = anaresponse.body();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode json = mapper.readTree(body);
-        JsonNode tabledata = json.get("Data").get("TableData").get(0);
+        //JsonNode tabledata = json.get("Data").get("TableData").get(0); newest packet
+        JsonNode tabledata = json.get("Data").get("TableData");
+        //Dodati logiku da se nadje customer name!!!!!
+        
         System.out.println(tabledata); // i need Message Reason, Bluetooth Firmware Version and BLE Client
-        String BLEClient = tabledata.path("RowData").path("BLEClient").asText("null");//vreca vrednost koja nije null ako uredjaj ima BLE
+        String BLEClient = tabledata.get(0).path("RowData").path("BLEClient").asText("null");//vreca vrednost koja nije null ako uredjaj ima BLE
         System.out.println(BLEClient);
         String MessageReason = tabledata.path("RowData").path("MessageReason").asText("null");
         System.out.println(MessageReason);
