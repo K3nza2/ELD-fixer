@@ -1,6 +1,7 @@
 package com.eldsolution;
 
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -14,9 +15,9 @@ public class GoogleSheetsHelper {
     private String spreadsheetId;
     private String range;
 
-    public GoogleSheetsHelper(String credentialsPath) throws Exception {
+    public GoogleSheetsHelper(String credentialsJson) throws Exception {
         GoogleCredentials credentials = GoogleCredentials
-            .fromStream(new FileInputStream(credentialsPath))
+            .fromStream(new ByteArrayInputStream(credentialsJson.getBytes(StandardCharsets.UTF_8)))
             .createScoped(Collections.singleton("https://www.googleapis.com/auth/spreadsheets"));
 
         this.sheetsService = new Sheets.Builder(

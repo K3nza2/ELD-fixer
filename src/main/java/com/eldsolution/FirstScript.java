@@ -5,13 +5,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.slack.api.Slack;
 import com.slack.api.bolt.App;
 import com.slack.api.bolt.socket_mode.SocketModeApp;
 import com.slack.api.model.event.MessageEvent;
+
+import io.github.cdimascio.dotenv.Dotenv;
 //Task: Add logic for tracking if the device is working or not through skyonics and if not send reset ble command
 //if it still does not work add new device to sheet and hasmap and add a counter to it
 public class FirstScript {
@@ -26,7 +27,7 @@ public class FirstScript {
         System.out.println("Pocinjem inicijalizaciju sheets-a...");
 
         //Set up sheets and connect
-        GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper("credentials.json");
+        GoogleSheetsHelper sheetsHelper = new GoogleSheetsHelper(dotenv.get("CREDENTIALS_JSON"));
         sheetsHelper.SetSpreadsheet(SpreadsheetId, Range);
         System.out.println("Sheets je inicijalizovan!");
         Sheets service = sheetsHelper.getSheetService();
