@@ -1,8 +1,10 @@
-[providers]
-nixpacks = true
+providers = ["java"]
 
 [phases.setup]
 nixPkgs = ["maven", "openjdk-17"]
 
 [phases.build]
 cmds = ["mvn -q -B -DskipTests package"]
+
+[start]
+cmd = "java -jar target/eldsolution-1.0-SNAPSHOT.jar"
