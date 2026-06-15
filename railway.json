@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "mvn -q exec:java -Dexec.mainClass=com.eldsolution.FirstScript",
+    "startCommand": "mvn -q exec:java -Dexec.mainClass=com.eldsolution.FirstScript -Dexec.cleanupDaemonThreads=false",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

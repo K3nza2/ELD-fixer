@@ -1,0 +1,8 @@
+[providers]
+nixpacks = true
+
+[phases.setup]
+nixPkgs = ["maven", "openjdk-17"]
+
+[phases.build]
+cmds = ["mvn -q -B -DskipTests package"]
