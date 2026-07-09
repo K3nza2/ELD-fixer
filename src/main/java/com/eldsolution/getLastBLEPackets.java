@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class getLastBLEPackets {
     public static void main(String[] args) throws IOException, InterruptedException{
-        
         String url = "https://www.skyonics.net/api/";
 
         HttpClient client = HttpClient.newHttpClient();
@@ -43,7 +42,7 @@ public class getLastBLEPackets {
             .build();
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
         System.out.println(response1.statusCode());
-        String ELD = "87A041770089";
+        String ELD = "87X051180474";
         Instant end_instance = Instant.now();
         Instant begin_instance = end_instance.minus(Duration.ofDays(2)); // od trenutka kada se pozove funkcija pa minus dva dana
         String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z je format
@@ -80,13 +79,17 @@ public class getLastBLEPackets {
         JsonNode json = mapper.readTree(body);
         //JsonNode tabledata = json.get("Data").get("TableData").get(0); newest packet
         JsonNode tabledata = json.get("Data").get("TableData");
-        
-        String BLEClient = tabledata.get(0).path("RowData").path("BLEClient").asText("null");//vreca vrednost koja nije null ako uredjaj ima BLE
-        System.out.println(BLEClient);
-        String MessageReason = tabledata.get(0).path("RowData").path("MessageReason").asText("null");
-        System.out.println(MessageReason);
-        String BLEFirmware = tabledata.get(0).path("RowData").path("BluetoothFirmwareVersion").asText("null");
-        System.out.println(BLEFirmware);
-        //dodati logiku da se ide kroz iteracije paketa ako paket nije ON PERIODIC
+        for (int i = 0; i < 10; i ++){
+            String MessageReason = tabledata.get(i).path("RowData").path("MessageReason").asText("null");
+            System.out.println(MessageReason);
+            if (MessageReason.equals("ON_PERIODIC")){
+                String BLEClient = tabledata.get(i).path("RowData").path("BLEClient").asText("null");
+                System.out.println(BLEClient);
+                String BluetoothFirmwareVersion = tabledata.get(0).path("RowData").path("BluetoothFirmwareVersion").asText("null");
+                System.out.println(BluetoothFirmwareVersion);
+                break;
+            }
+        }
+        //Poboljsati logiku za proveru paketa koji je stigao a zatim osposobiti pustanje komandi
     }
 }
