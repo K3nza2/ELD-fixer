@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
+
 public class getLastBLEPackets {
     public static void main(String[] args) throws IOException, InterruptedException{
         String url = "https://www.skyonics.net/api/";
@@ -42,7 +43,7 @@ public class getLastBLEPackets {
             .build();
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
         System.out.println(response1.statusCode());
-        String ELD = "87X051180474";
+        String ELD = "87B010690787";
         Instant end_instance = Instant.now();
         Instant begin_instance = end_instance.minus(Duration.ofDays(2)); // od trenutka kada se pozove funkcija pa minus dva dana
         String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z je format
@@ -82,7 +83,11 @@ public class getLastBLEPackets {
         for (int i = 0; i < 10; i ++){
             String MessageReason = tabledata.get(i).path("RowData").path("MessageReason").asText("null");
             System.out.println(MessageReason);
-            if (MessageReason.equals("ON_PERIODIC")){
+            if (MessageReason.equals("IGN_OFF") || MessageReason.equals("POWER_CUT") || MessageReason.equals("POWER_OFF")){
+                System.out.println("Ugasen kamion");
+                break;
+            }
+            else if (MessageReason.equals("ON_PERIODIC")){
                 String BLEClient = tabledata.get(i).path("RowData").path("BLEClient").asText("null");
                 System.out.println(BLEClient);
                 String BluetoothFirmwareVersion = tabledata.get(0).path("RowData").path("BluetoothFirmwareVersion").asText("null");
@@ -91,5 +96,6 @@ public class getLastBLEPackets {
             }
         }
         //Poboljsati logiku za proveru paketa koji je stigao a zatim osposobiti pustanje komandi
+        //user id mozda:U09BJUM146M
     }
 }
