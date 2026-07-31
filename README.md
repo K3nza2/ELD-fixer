@@ -116,9 +116,15 @@ Whenever a Slack message containing an ELD serial number is received:
 | Reaction | Meaning                                                 |
 | -------- | ------------------------------------------------------- |
 | 👀       | Device not found in the tracker. Investigation started. |
+<<<<<<< HEAD
 | :eyes:       | Device processed successfully.                          |
 | ✅        | BLE communication verified successfully.                |
 | ❌        | Engine is off or the device is unplugged.               |
+=======
+| 📗       | Device added to the sheet successfully.                 |
+| ✅       | BLE communication verified successfully.                |
+| ❌       | Engine is off or the device is unplugged.               |
+>>>>>>> 217f9c1 (Changed README so it reflects Fixer 2.0)
 
 ---
 
