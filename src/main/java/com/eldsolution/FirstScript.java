@@ -31,7 +31,7 @@ public class FirstScript {
         );
         App app = new App();
         
-        System.out.println("Pocinjem sa cekanjem poruka na slack-u...");
+        System.out.println("Starting to read messages on slack...");
         app.event(MessageEvent.class, (payload, ctx) -> {
             ctx.ack();
             String eventID = payload.getEventId();
@@ -80,7 +80,7 @@ public class FirstScript {
                 if(deviceMap.containsKey(id_uredjaja)) {
                     System.out.println("Found device:" + id_uredjaja);
                     int rowindex = deviceMap.get(id_uredjaja);
-                    String counterRange = "'Test'!D" + rowindex; // promeniti u sheet1 u prod
+                    String counterRange = "'Sheet1'!D" + rowindex;
                     ValueRange counterResult = service.spreadsheets().values().get(SpreadsheetId, counterRange).execute();
                     int counter = 0;
                     if(counterResult.getValues() != null && !counterResult.getValues().isEmpty()) {
@@ -94,7 +94,7 @@ public class FirstScript {
                         slack.methods(bot_level_token).reactionsAdd(r -> r
                         .channel(event.getChannel())
                         .timestamp(event.getTs())
-                        .name("+1") //need to change to something that the test channel can add, after its pushed to prod switch to sheet1
+                        .name("sheet1")
                     );
                     } catch (Exception e) {
                     System.out.println("Reaction error: " + e.getMessage());
@@ -194,7 +194,7 @@ public class FirstScript {
                             )
                             );
                             service.spreadsheets().values()
-                            .append(SpreadsheetId, "'Test'!A:E", body) // promeniti u Sheet1 u prod
+                            .append(SpreadsheetId, "'Sheet1'!A:E", body)
                             .setValueInputOption("RAW")
                             .setInsertDataOption("INSERT_ROWS")
                             .execute();
@@ -202,7 +202,7 @@ public class FirstScript {
                                 slack.methods(bot_level_token).reactionsAdd(r -> r
                                 .channel(event.getChannel())
                                 .timestamp(event.getTs())
-                                .name("+1") // change before pushing to prod into sheet1
+                                .name("sheet1")
                                 );
                             }
                             catch (Exception e) {
@@ -212,7 +212,7 @@ public class FirstScript {
                     
                     }
                     else {
-                        System.out.println("IDK BRATE OVO NE RADI");
+                        System.out.println("Invalid data!");
                     }
                 }
 

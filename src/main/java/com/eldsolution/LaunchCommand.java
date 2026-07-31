@@ -12,7 +12,6 @@ import org.apache.hc.core5.net.URIBuilder;
 
 
 public class LaunchCommand {
-    //public static void main(String[] args) throws IOException, InterruptedException, URISyntaxException{
     private static final String URL = "https://geometrissubscribersapi.azurewebsites.net/api/proxy/APIDeviceCommands";
     private String apikey;
     private String eld;
@@ -48,7 +47,7 @@ public class LaunchCommand {
             Thread.sleep(120000); //120 seconds pause between next command
 
         if (eld.charAt(2)=='B'){
-            System.out.println("FOUND B SERIES DEVICE"); //ukloniti ovo naknadno ako radi
+            System.out.println("FOUND B SERIES DEVICE");
             URI uriSeriesB = new URIBuilder(URL)
             .addParameter("serialNumber", eld)
             .addParameter("command", "BLETEST 34")
@@ -66,7 +65,7 @@ public class LaunchCommand {
             System.out.println("Second command status code:" + responseSecondCommand.statusCode());
         }
         else {
-            System.out.println("FOUND X/A/U SERIES DEVICE"); //ukloniti ovo naknadno ako radi
+            System.out.println("FOUND X/A/U SERIES DEVICE");
             URI uriSeriesX = new URIBuilder(URL)
             .addParameter("serialNumber", eld)
             .addParameter("command", "BLETEST 9")

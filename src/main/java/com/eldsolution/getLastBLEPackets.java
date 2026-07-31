@@ -22,8 +22,8 @@ public class getLastBLEPackets {
     static String cookie;
     static HttpClient client;
     Instant end_instance = Instant.now();
-    Instant begin_instance = end_instance.minus(Duration.ofDays(2)); // od trenutka kada se pozove funkcija pa minus dva dana
-    String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z je format
+    Instant begin_instance = end_instance.minus(Duration.ofDays(2)); //this moment minus two days
+    String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z is the format
     String end = end_instance.toString();
     String TZO = "-300";
     String Graph = "OBDOdometer";
@@ -107,5 +107,4 @@ public class getLastBLEPackets {
         }
         return Arrays.asList("null","null","null");
     }
-        //user id mozda:U09BJUM146M
 }
