@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,10 +17,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public class getLastBLEPackets {
-    public static void main(String[] args) throws IOException, InterruptedException{
-        String url = "https://www.skyonics.net/api/";
+    String url = "https://www.skyonics.net/api/";
+    private String ELD;
+    static String cookie;
+    static HttpClient client;
+    Instant end_instance = Instant.now();
+    Instant begin_instance = end_instance.minus(Duration.ofDays(2)); // od trenutka kada se pozove funkcija pa minus dva dana
+    String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z je format
+    String end = end_instance.toString();
+    String TZO = "-300";
+    String Graph = "OBDOdometer";
+    String Origin = "siteOperationsManagerDeviceanalysisPackets";
 
-        HttpClient client = HttpClient.newHttpClient();
+    public getLastBLEPackets () throws IOException, InterruptedException{
+
+        client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(url+"proxy/userlogin/login"))
             .header("Content-Type","application/x-www-form-urlencoded")
@@ -33,7 +45,7 @@ public class getLastBLEPackets {
             cookies.add(cookie.split(";")[0]);
         }
 
-        String cookie = String.join("; ",cookies);
+        cookie = String.join("; ",cookies);
         
         HttpRequest request1 = HttpRequest.newBuilder()
             .uri(URI.create(url+"proxy/devicehealthoperations/getcustomers"))
@@ -42,15 +54,18 @@ public class getLastBLEPackets {
             .GET()
             .build();
         HttpResponse<String> response1 = client.send(request1,HttpResponse.BodyHandlers.ofString());
-        System.out.println(response1.statusCode());
-        String ELD = "87B010690787";
-        Instant end_instance = Instant.now();
-        Instant begin_instance = end_instance.minus(Duration.ofDays(2)); // od trenutka kada se pozove funkcija pa minus dva dana
-        String Begin = begin_instance.toString(); //2026-05-25T04:59:59.999Z je format
-        String end = end_instance.toString();
-        String TZO = "-300";
-        String Graph = "OBDOdometer";
-        String Origin = "siteOperationsManagerDeviceanalysisPackets";
+        System.out.println("Skyonics login status code:" + response1.statusCode());
+    }
+
+    public void setELD(String eld){
+        this.ELD = eld;
+    }
+
+    public String getELD() {
+        return this.ELD;
+    }
+
+    public String getCustomerName() throws IOException, InterruptedException{
 
         HttpRequest get_device_info = HttpRequest.newBuilder()
             .uri(URI.create(url + "proxy/devicehealthoperations/getdevicehealthinfo?deviceSerialNumber=" + ELD))
@@ -62,12 +77,10 @@ public class getLastBLEPackets {
         String body_device_health_info = device_health_info.body();
         ObjectMapper device_health_info_mapper = new ObjectMapper();
         JsonNode device_health_json = device_health_info_mapper.readTree(body_device_health_info);
-        String customerID = device_health_json.path("Data").path("CustomerId").asText("null");
         String customerName = device_health_json.path("Data").path("CustomerName").asText("null");
-        System.out.println(customerID);
-        System.out.println(customerName);
-        
- 
+        return customerName;
+    }   
+    public List<String> getPacket() throws InterruptedException, IOException{
         HttpRequest get_anaview = HttpRequest.newBuilder()
             .uri(URI.create(url+"proxy/devicehealthoperations/getanalysisview"))
             .header("Content-type", "application/x-www-form-urlencoded")
@@ -82,20 +95,17 @@ public class getLastBLEPackets {
         JsonNode tabledata = json.get("Data").get("TableData");
         for (int i = 0; i < 10; i ++){
             String MessageReason = tabledata.get(i).path("RowData").path("MessageReason").asText("null");
-            System.out.println(MessageReason);
-            if (MessageReason.equals("IGN_OFF") || MessageReason.equals("POWER_CUT") || MessageReason.equals("POWER_OFF")){
-                System.out.println("Ugasen kamion");
-                break;
+            if (MessageReason.equals("IGN_OFF") || MessageReason.equals("POWER_CUT") || MessageReason.equals("POWER_OFF") || MessageReason.equals("OFF_PERIODIC")){
+                System.out.println("Engine off or device unplugged!");
+                return Arrays.asList("IGN_OFF","null","null");
             }
-            else if (MessageReason.equals("ON_PERIODIC")){
+            else if (MessageReason.equals("ON_PERIODIC") || MessageReason.equals("IGN_ON") || MessageReason.equals("IDLING") || MessageReason.equals("IDLING_END")){
                 String BLEClient = tabledata.get(i).path("RowData").path("BLEClient").asText("null");
-                System.out.println(BLEClient);
                 String BluetoothFirmwareVersion = tabledata.get(0).path("RowData").path("BluetoothFirmwareVersion").asText("null");
-                System.out.println(BluetoothFirmwareVersion);
-                break;
+                return Arrays.asList("ON_PERIODIC",BluetoothFirmwareVersion,BLEClient);
             }
         }
-        //Poboljsati logiku za proveru paketa koji je stigao a zatim osposobiti pustanje komandi
-        //user id mozda:U09BJUM146M
+        return Arrays.asList("null","null","null");
     }
+        //user id mozda:U09BJUM146M
 }
