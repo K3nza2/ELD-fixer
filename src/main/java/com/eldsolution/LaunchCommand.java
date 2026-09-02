@@ -43,6 +43,7 @@ public class LaunchCommand {
 
             HttpResponse<String> responseFirstCommand = client.send(firstRequest, HttpResponse.BodyHandlers.ofString());
             System.out.println("First command status code" + responseFirstCommand.statusCode());
+            System.out.println("First command response: " + responseFirstCommand.body());
 
             Thread.sleep(120000); //120 seconds pause between next command
 
@@ -63,6 +64,7 @@ public class LaunchCommand {
 
             HttpResponse<String> responseSecondCommand = client.send(secondRequestSeriesB, HttpResponse.BodyHandlers.ofString());
             System.out.println("Second command status code:" + responseSecondCommand.statusCode());
+            System.out.println("Second command response: " + responseSecondCommand.body());
         }
         else {
             System.out.println("FOUND X/A/U SERIES DEVICE");
@@ -81,7 +83,8 @@ public class LaunchCommand {
 
             HttpResponse<String> responseSecondCommand = client.send(secondRequestSeriesX, HttpResponse.BodyHandlers.ofString());
             System.out.println("Second command status code:" + responseSecondCommand.statusCode());
+            System.out.println("Second command response: " + responseSecondCommand.body());
         }
-        Thread.sleep(130000);
+        Thread.sleep(240000);
     }
 }

@@ -91,7 +91,6 @@ public class getLastBLEPackets {
         String body = anaresponse.body();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode json = mapper.readTree(body);
-        //JsonNode tabledata = json.get("Data").get("TableData").get(0); newest packet
         JsonNode tabledata = json.get("Data").get("TableData");
         for (int i = 0; i < 10; i ++){
             String MessageReason = tabledata.get(i).path("RowData").path("MessageReason").asText("null");
